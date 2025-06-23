@@ -1,4 +1,4 @@
-# gaming-hours-log
+# gaming-hours-tracker
 
 first thoughts:
 
