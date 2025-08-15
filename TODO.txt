@@ -1,0 +1,25 @@
+-delete session button
+
+-STATS
+	-data options for current day, past week, month, year, etc.
+
+	-graph generation for each of the above
+
+	-weekly report emailed to each user perhaps (with graphs??)
+
+-user can set goals? weekly, daily, etc
+
+-pretty html/css
+
+-option for users to have publicly viewable account and stats
+	-another page with list of users or something with aggregated stats?
+
+-show which user added each game
+
+-favourites list for games
+
+-start and end time can be entered manually or can be clicked as a button (start time button click would register the current time as start time, and end time button click would calculate the difference between current time and start time)
+	-have user set timezone first?
+
+-have owner be able to remove games?
+

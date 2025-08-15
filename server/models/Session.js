@@ -5,7 +5,7 @@ const sessionSchema = new mongoose.Schema({
   game:      { type: mongoose.Schema.Types.ObjectId, ref: 'Game', required: true },
   startTime: { type: Date, required: true },
   endTime:   { type: Date, required: true },
-  duration:  { type: Number } // in minutes or seconds
+  duration:  { type: Number }
 });
 
 module.exports = mongoose.model('Session', sessionSchema);
