@@ -1,0 +1,196 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+interface Session {
+  _id: string;
+  game: { _id: string; title: string };
+  startTime: string;
+  endTime: string;
+  duration: number;
+}
+
+interface GameStat {
+  _id: string;
+  totalMinutes: number;
+  sessions: number;
+  game: { _id: string; title: string };
+}
+
+function formatTime(minutes: number) {
+  const hrs = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  if (hrs > 0 && mins > 0) return `${hrs} hr ${mins} min`;
+  if (hrs > 0) return `${hrs} hr`;
+  return `${mins} min`;
+}
+
+type Range = 'day' | 'week' | 'month' | 'year';
+
+const rangeLabels: Record<Range, string> = {
+  day: 'Today',
+  week: 'Past Week',
+  month: 'Past Month',
+  year: 'Past Year',
+};
+
+const Stats: React.FC<{ userId: string }> = ({ userId }) => {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [range, setRange] = useState<Range>('week');
+  const [goal, setGoal] = useState<number>(0); 
+  const [goalMsg, setGoalMsg] = useState('');
+  const [gameStats, setGameStats] = useState<GameStat[]>([]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:5000/api/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
+  }, [userId]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:5000/api/sessions/${userId}/game-stats?range=${range}`).then(res => setGameStats(res.data)).catch(err => setGameStats([]));
+  }, [userId, range]);
+
+  const filteredSessions = sessions.filter(session => {
+    const now = new Date();
+    const sessionDate = new Date(session.startTime);
+    switch (range) {
+      case 'day':
+        return sessionDate.toDateString() === now.toDateString();
+      case 'week': {
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return sessionDate >= weekAgo;
+      }
+      case 'month': {
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(now.getMonth() - 1);
+        return sessionDate >= monthAgo;
+      }
+      case 'year': {
+        const yearAgo = new Date(now);
+        yearAgo.setFullYear(now.getFullYear() - 1);
+        return sessionDate >= yearAgo;
+      }
+      default:
+        return true;
+    }
+  });
+
+  const totalMinutes = filteredSessions.reduce((sum, s) => sum + s.duration, 0);
+  const totalHours = (totalMinutes / 60).toFixed(2);
+
+  const chartData = {
+    labels: filteredSessions.map(s => new Date(s.startTime).toLocaleDateString()),
+    datasets: [
+      {
+        label: 'Minutes Played',
+        data: filteredSessions.map(s => s.duration),
+        fill: false,
+        borderColor: 'blue',
+      },
+    ],
+  };
+
+  const handleGoalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setGoalMsg('Goal saved!');
+    setTimeout(() => setGoalMsg(''), 2000);
+  };
+
+  return (
+    <div>
+      <h2>Stats</h2>
+      <div>
+        <label>Show data for: </label>
+        {(['day', 'week', 'month', 'year'] as Range[]).map(r => (
+          <button
+            key={r}
+            onClick={() => setRange(r)}
+            style={{ fontWeight: range === r ? 'bold' : 'normal' }}
+          >
+            {rangeLabels[r]}
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <h3>Total Time: {formatTime(totalMinutes)}</h3>
+        {goal > 0 && (
+            <div>
+            Goal: {goal} hours per {range}
+            <br />
+            {totalMinutes / 60 > goal ? (
+                <span style={{ color: 'red' }}>Goal exceeded!</span>
+            ) : (
+                <span style={{ color: 'green' }}>Within goal</span>
+            )}
+            </div>
+        )}
+      </div>
+
+      <form onSubmit={handleGoalSubmit}>
+        <label>
+          Set goal (hours per {range}):{' '}
+          <input
+            type="number"
+            value={goal}
+            onChange={e => setGoal(Number(e.target.value))}
+            min={0}
+            step={0.5}
+          />
+        </label>
+        <button type="submit">Save Goal</button>
+        <span>{goalMsg}</span>
+      </form>
+
+      <div style={{ maxWidth: 600, margin: '2em 0' }}>
+        <Line data={chartData} />
+      </div>
+
+      <div>
+        <h3>Per-Game Stats ({rangeLabels[range]})</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Game</th>
+                <th>Total Hours</th>
+                <th>Sessions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {gameStats.map(stat => (
+                <tr key={stat._id}>
+                <td>{stat.game?.title}</td>
+                <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
+                <td>{stat.sessions}</td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+      </div>
+
+      {/* Weekly report email and advanced features would be handled in backend and user settings */}
+    </div>
+  );
+};
+
+export default Stats;
