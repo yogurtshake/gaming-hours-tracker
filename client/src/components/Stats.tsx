@@ -66,7 +66,13 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
   }, [userId]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/sessions/${userId}/game-stats?range=${range}`).then(res => setGameStats(res.data)).catch(err => setGameStats([]));
+  axios
+    .get(`http://localhost:5000/api/sessions/${userId}/game-stats?range=${range}`)
+    .then(res => {
+      console.log('gameStats:', res.data);
+      setGameStats(res.data);
+    })
+    .catch(err => setGameStats([]));
   }, [userId, range]);
 
   const filteredSessions = sessions.filter(session => {
@@ -176,19 +182,25 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
                 <th>Sessions</th>
             </tr>
             </thead>
+          
             <tbody>
-            {gameStats.map(stat => (
+            {gameStats.length === 0 ? (
+              <tr>
+                <td colSpan={3}>No data for this range.</td>
+              </tr>
+            ) : (
+              gameStats.map(stat => (
                 <tr key={stat._id}>
-                <td>{stat.game?.title}</td>
-                <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
-                <td>{stat.sessions}</td>
+                  <td>{stat.game?.title || 'Unknown Game'}</td>
+                  <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
+                  <td>{stat.sessions}</td>
                 </tr>
-            ))}
+              ))
+            )}
             </tbody>
         </table>
       </div>
 
-      {/* Weekly report email and advanced features would be handled in backend and user settings */}
     </div>
   );
 };

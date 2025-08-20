@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Session = require("../models/Session");
+const mongoose = require("mongoose");
 
 router.post("/", async (req, res) => {
   try {
@@ -79,6 +80,12 @@ router.get('/:userId/stats', async (req, res) => {
 router.get('/:userId/game-stats', async (req, res) => {
   const { userId } = req.params;
   const { range } = req.query;
+  console.log('userId:', userId);
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: "Invalid userId" });
+  }
+  const objectUserId = new mongoose.Types.ObjectId(userId);
 
   const now = new Date();
   let fromDate = new Date(now);
@@ -99,7 +106,7 @@ router.get('/:userId/game-stats', async (req, res) => {
       fromDate = null;
   }
 
-  const match = { user: userId };
+  const match = { user: objectUserId };
   if (fromDate) match.startTime = { $gte: fromDate };
 
   try {
