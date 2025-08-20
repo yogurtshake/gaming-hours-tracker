@@ -1,25 +1,23 @@
--delete session button
-
 -STATS
-	-data options for current day, past week, month, year, etc.
-
-	-graph generation for each of the above
-
 	-weekly report emailed to each user perhaps (with graphs??)
+	-user can set goals? weekly, daily, etc
 
--user can set goals? weekly, daily, etc
+-GAMES
+	-show which user added each game
+	-favourites list for games
+	-have owner be able to remove games?
+
+-SESSIONS
+	-disallow session start time that is after end time?
+	-default amount of displayed sessions
+	-options for displaying more sessions
+
+-USERS
+	-option for users to have publicly viewable account and stats
+	-another page with list of users or something with aggregated stats?
+
 
 -pretty html/css
 
--option for users to have publicly viewable account and stats
-	-another page with list of users or something with aggregated stats?
-
--show which user added each game
-
--favourites list for games
-
--start and end time can be entered manually or can be clicked as a button (start time button click would register the current time as start time, and end time button click would calculate the difference between current time and start time)
-	-have user set timezone first?
-
--have owner be able to remove games?
+-clean up folders (remove useless default react files?)
 

@@ -7,8 +7,12 @@ interface Game {
   iconUrl?: string;
 }
 
-const GameList: React.FC = () => {
-  const [games, setGames] = useState<Game[]>([]);
+interface GameListProps {
+  games: Game[];
+  refreshGames: () => void;
+}
+
+const GameList: React.FC<GameListProps> = ({ games, refreshGames }) => {
   const [title, setTitle] = useState('');
   const [iconUrl, setIconUrl] = useState('');
   const [message, setMessage] = useState('');
@@ -16,24 +20,18 @@ const GameList: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editIconUrl, setEditIconUrl] = useState('');
 
-  useEffect(() => {
-    axios.get('http://localhost:5000/api/games')
-      .then(res => setGames(res.data))
-      .catch(err => console.error(err));
-  }, []);
-
   const addGame = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post('http://localhost:5000/api/games', { title, iconUrl });
-      setGames([...games, res.data]);
-      setTitle('');
-      setIconUrl('');
-      setMessage('');
-    } catch (err: any) {
-      setMessage(err.response?.data?.error || 'Failed to add game');
-    }
-  };
+  e.preventDefault();
+  try {
+    await axios.post('http://localhost:5000/api/games', { title, iconUrl });
+    setTitle('');
+    setIconUrl('');
+    setMessage('');
+    refreshGames(); 
+  } catch (err: any) {
+    setMessage(err.response?.data?.error || 'Failed to add game');
+  }
+};
 
   const startEdit = (game: Game) => {
     setEditingId(game._id);
@@ -50,17 +48,17 @@ const GameList: React.FC = () => {
   };
 
   const saveEdit = async (gameId: string) => {
-    try {
-      const res = await axios.put(`http://localhost:5000/api/games/${gameId}`, {
-        title: editTitle,
-        iconUrl: editIconUrl,
-      });
-      setGames(games.map(g => g._id === gameId ? res.data : g));
-      cancelEdit();
-    } catch (err: any) {
-      setMessage(err.response?.data?.error || 'Failed to update game');
-    }
-  };
+  try {
+    await axios.put(`http://localhost:5000/api/games/${gameId}`, {
+      title: editTitle,
+      iconUrl: editIconUrl,
+    });
+    cancelEdit();
+    refreshGames(); 
+  } catch (err: any) {
+    setMessage(err.response?.data?.error || 'Failed to update game');
+  }
+};
 
   return (
     <div>
