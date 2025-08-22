@@ -69,9 +69,10 @@ const GameList: React.FC<GameListProps> = ({ games, refreshGames }) => {
         <button type="submit">Add Game</button>
       </form>
       {message && <div style={{ color: 'red' }}>{message}</div>}
-      <ul>
+    
+      <ul className="game-list">
         {games.map(game => (
-          <li key={game._id}>
+          <li key={game._id} className="game-list-item">
             {editingId === game._id ? (
               <>
                 <input

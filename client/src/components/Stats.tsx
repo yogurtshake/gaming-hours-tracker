@@ -237,7 +237,7 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
             </tbody>
         </table>
         {gameStats.length > 0 && (
-          <div style={{ maxWidth: 400 }}>
+          <div style={{ maxWidth: 400, margin: '2em auto' }}>
             <Pie data={pieData} options={pieOptions} />
           </div>
         )}

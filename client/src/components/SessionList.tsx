@@ -140,30 +140,39 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
             </option>
           ))}
         </select>
-        <input
-          type="datetime-local"
-          value={startTime}
-          onChange={(e) => setStartTime(e.target.value)}
-          required
-        />
-        <button type="button" onClick={() => setStartTime(getNowForInput())}>
-          Now
-        </button>
-        <input
-          type="datetime-local"
-          value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
-          required
-        />
-        <button type="button" onClick={() => setEndTime(getNowForInput())}>
-          Now
-        </button>
+        
+        <div className="datetime-row">
+          START TIME:
+          <input
+            type="datetime-local"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            required
+          />
+          <button type="button" onClick={() => setStartTime(getNowForInput())}>
+            Now
+          </button>
+        </div>
+        
+        <div className="datetime-row">
+          END TIME:
+          <input
+            type="datetime-local"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            required
+          />
+          <button type="button" onClick={() => setEndTime(getNowForInput())}>
+            Now
+          </button>
+        </div>
+
         <button type="submit">Add Session</button>
       </form>
 
-      <ul>
+      <ul className="session-list">
         {sessions.map((session) => (
-          <li key={session._id}>
+          <li key={session._id} className="session-list-item">
             {editingId === session._id ? (
               <>
                 <select
@@ -225,15 +234,19 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
                   hour12: false,
                 })}{" "}
                 | {formatDuration(Math.round(session.duration))}
-                <button type="button" onClick={() => startEdit(session)}>
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteSession(session._id)}
-                >
-                  Delete
-                </button>
+                
+                <div className="session-actions">
+                  <button type="button" onClick={() => startEdit(session)}>
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSession(session._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+                
               </>
             )}
           </li>

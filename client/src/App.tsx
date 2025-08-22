@@ -41,45 +41,58 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <div className="main-layout">
+      <div className="main-content">
+        <div className="app-container">
+          <Router>
+            <nav>
+              <Link to="/">Home</Link> | <Link to="/settings">Settings</Link> | <Link to="/register">Register</Link> | <Link to="/login">Login</Link>
+              {userId && <button onClick={handleLogout}>Logout</button>}
+            </nav>
+
+            <Routes>
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              
+              <Route
+                path="/"
+                element={
+                  userId ? (
+                    <>
+                      {userId && username && <div><br />Welcome, {username}!</div>}
+                      <GameList games={games} refreshGames={fetchGames} />
+                      <hr className="section-divider" />
+                      <SessionList userId={userId} games={games} />
+                      <hr className="section-divider" />                  
+                    </>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route
+                path="/settings"
+                element={
+                  userId ? (
+                    <UserSettings userId={userId} username={username} onUsernameChange={setUsername} />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+            </Routes>
+          </Router>
+        </div>
+      </div>
+
+      {userId && (
+        <aside className="stats-sidebar">
+          <Stats userId={userId} />
+        </aside>
+      )}
       
-      <nav>
-        <Link to="/">Home</Link> | <Link to="/settings">Settings</Link> | <Link to="/register">Register</Link> | <Link to="/login">Login</Link>
-        {userId && <button onClick={handleLogout}>Logout</button>}
-      </nav>
-
-      <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        
-        <Route
-          path="/"
-          element={
-            userId ? (
-              <>
-                {userId && username && <div><br />Welcome, {username}!</div>}
-                <GameList games={games} refreshGames={fetchGames} />
-                <SessionList userId={userId} games={games} />
-                <Stats userId={userId} />
-              </>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            userId ? (
-              <UserSettings userId={userId} username={username} onUsernameChange={setUsername} />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-      </Routes>
-    </Router>
+    </div>
   );
 }
 
