@@ -1,7 +1,10 @@
 -STATS
+	-FIX STATS NOT UPDATING UPON ADDED SESSION
 	-weekly report emailed to each user perhaps (with graphs??)
 	-change goals section to be separate from graphs, fix goal setting
 	-update graphs (do I want mins or hours?)
+		-for "Today" option, show hours of the day on x-axis?
+		-change x-axis for past month and past year options
 
 -GAMES
 	-show which user added each game
@@ -18,7 +21,11 @@
 	-another page with list of users or something with aggregated stats?
 
 
--pretty html/css
+-HTML/CSS
+	-small divider between new Game/Session area and list of Games/Sessions
+	-make edit/delete buttons smaller?
+	-fix small issue of editing session extends buttons outside of background borders
+
 
 -clean up folders (remove useless default react files?)
 
