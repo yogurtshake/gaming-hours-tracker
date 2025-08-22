@@ -175,7 +175,7 @@ tr:hover {
 
 .main-layout {
   display: flex;
-  gap: 8rem;
+  gap: 10rem;
   align-items: flex-start;
   justify-content: center;
   margin: 2rem auto;
