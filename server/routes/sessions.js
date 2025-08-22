@@ -80,7 +80,6 @@ router.get('/:userId/stats', async (req, res) => {
 router.get('/:userId/game-stats', async (req, res) => {
   const { userId } = req.params;
   const { range } = req.query;
-  console.log('userId:', userId);
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ error: "Invalid userId" });

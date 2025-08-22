@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Line } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,6 +10,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
 } from 'chart.js';
 
 ChartJS.register(
@@ -21,6 +22,8 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+ChartJS.register(ArcElement);
 
 interface Session {
   _id: string;
@@ -74,6 +77,40 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
     })
     .catch(err => setGameStats([]));
   }, [userId, range]);
+
+  const pieData = {
+    labels: gameStats.map(stat => stat.game?.title || 'Unknown Game'),
+    datasets: [
+      {
+        data: gameStats.map(stat => stat.totalMinutes),
+        backgroundColor: [
+          '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
+          '#166a8f', '#00a950', '#58595b', '#8549ba'
+        ],
+      },
+    ],
+  };
+
+  const pieOptions = {
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const data = context.chart.data.datasets[0].data;
+            const total = data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+            return `${label}: ${value} min (${percentage}%)`;
+          }
+        }
+      },
+      legend: {
+        display: true,
+        position: 'bottom' as const,
+      }
+    }
+  };
 
   const filteredSessions = sessions.filter(session => {
     const now = new Date();
@@ -199,6 +236,12 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
             )}
             </tbody>
         </table>
+        {gameStats.length > 0 && (
+          <div style={{ maxWidth: 400 }}>
+            <Pie data={pieData} options={pieOptions} />
+          </div>
+        )}
+
       </div>
 
     </div>
