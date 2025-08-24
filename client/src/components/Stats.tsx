@@ -57,9 +57,8 @@ const rangeLabels: Record<Range, string> = {
   year: 'Past Year',
 };
 
-const Stats: React.FC<{ userId: string }> = ({ userId }) => {
+const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => void }> = ({ userId, range, setRange }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [range, setRange] = useState<Range>('week');
   const [goalMsg, setGoalMsg] = useState('');
   const [gameStats, setGameStats] = useState<GameStat[]>([]);
   const [goalPerDay, setGoalPerDay] = useState<number>(1);
@@ -192,40 +191,40 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
           </button>
         ))}
       </div>
-
-      <div>
-        <h3>Total Time: {formatTime(totalMinutes)}</h3>
-        
+      
+      <h3>Total Time: {formatTime(totalMinutes)}</h3>
+      
+      <div style={{ textAlign: 'center' }}>
         {goalInput > 0 && (
-            <div>
-              Goal: {scaledGoal} hours per {range}
-              <br />
-              {totalMinutes / 60 > scaledGoal ? (
-                <span style={{ color: 'red' }}>Goal exceeded!</span>
-              ) : (
-                <span style={{ color: 'green' }}>Within goal</span>
-              )}
-            </div>
+          <div>
+            Goal: {scaledGoal} hours per {range}
+            <br />
+            {totalMinutes / 60 > scaledGoal ? (
+              <span style={{ color: 'red' }}>Goal exceeded!</span>
+            ) : (
+              <span style={{ color: 'green' }}>Within goal</span>
+            )}
+          </div>
         )}
-      </div>
 
-    <form onSubmit={handleGoalSave} style={{ margin: '1rem 0' }}>
-      <label>
-        Set goal (hours per day):
-      </label>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <input
-          id="goalInput"
-          type="number"
-          value={goalInput}
-          onChange={e => setGoalInput(Number(e.target.value))}
-          min={0}
-          step={0.1}
-          style={{ width: '80px' }}
-        />
-        <button type="submit">Save Goal</button>
+        <form onSubmit={handleGoalSave} style={{ margin: '1rem 0', display: 'inline-block' }}>
+          <label htmlFor="goalInput" style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Set goal (hours per day):
+          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <input
+              id="goalInput"
+              type="number"
+              value={goalInput}
+              onChange={e => setGoalInput(Number(e.target.value))}
+              min={0}
+              step={0.1}
+              style={{ width: '80px' }}
+            />
+            <button type="submit">Save Goal</button>
+          </div>
+        </form>
       </div>
-    </form>
 
     <div style={{ maxWidth: 600, margin: '2em 0' }}>
       <Line data={chartData} />

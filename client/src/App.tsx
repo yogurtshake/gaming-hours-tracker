@@ -13,6 +13,7 @@ function App() {
   const [username, setUsername] = useState<string | null>(() => localStorage.getItem('username'));
   const [games, setGames] = useState([]);
   const [statsRefreshKey, setStatsRefreshKey] = useState(0);
+  const [statsRange, setStatsRange] = useState<"day" | "week" | "month" | "year">("week");
 
   const handleLogin = (id: string, username: string) => {
     setUserId(id);
@@ -89,7 +90,12 @@ function App() {
 
       {userId && (
         <aside className="stats-sidebar">
-          <Stats userId={userId} key={statsRefreshKey} />
+          <Stats 
+            userId={userId} 
+            key={statsRefreshKey} 
+            range={statsRange}
+            setRange={setStatsRange}
+          />
         </aside>
       )}
       
