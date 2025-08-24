@@ -44,16 +44,6 @@ router.put('/email', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ email: user.email });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 router.put('/username', async (req, res) => {
   try {
     const { userId, newUsername } = req.body;
@@ -83,5 +73,31 @@ router.put('/password', async (req, res) => {
   }
 });
 
+router.get('/:userId/goal', async (req, res) => {
+  const user = await User.findById(req.params.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ goalPerDay: user.goalPerDay || 1 });
+});
+
+router.put('/:userId/goal', async (req, res) => {
+  const { goalPerDay } = req.body;
+  const user = await User.findByIdAndUpdate(
+    req.params.userId,
+    { goalPerDay },
+    { new: true }
+  );
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ goalPerDay: user.goalPerDay });
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ email: user.email });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

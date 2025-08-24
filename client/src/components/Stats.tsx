@@ -60,9 +60,10 @@ const rangeLabels: Record<Range, string> = {
 const Stats: React.FC<{ userId: string }> = ({ userId }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [range, setRange] = useState<Range>('week');
-  const [goal, setGoal] = useState<number>(0); 
   const [goalMsg, setGoalMsg] = useState('');
   const [gameStats, setGameStats] = useState<GameStat[]>([]);
+  const [goalPerDay, setGoalPerDay] = useState<number>(1);
+  const [goalInput, setGoalInput] = useState<number>(1);
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
@@ -72,11 +73,33 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
   axios
     .get(`http://localhost:5000/api/sessions/${userId}/game-stats?range=${range}`)
     .then(res => {
-      console.log('gameStats:', res.data);
       setGameStats(res.data);
     })
     .catch(err => setGameStats([]));
   }, [userId, range]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:5000/api/users/${userId}/goal`)
+      .then(res => {
+        setGoalPerDay(res.data.goalPerDay);
+        setGoalInput(res.data.goalPerDay);
+      });
+  }, [userId]);
+
+  const handleGoalSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await axios.put(`http://localhost:5000/api/users/${userId}/goal`, { goalPerDay: goalInput });
+    setGoalPerDay(goalInput);
+  };
+
+  const rangeMultipliers: Record<string, number> = {
+    day: 1,
+    week: 7,
+    month: 30,
+    year: 365,
+  };
+  
+  const scaledGoal = goalPerDay * rangeMultipliers[range];
 
   const pieData = {
     labels: gameStats.map(stat => stat.game?.title || 'Unknown Game'),
@@ -153,15 +176,10 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
     ],
   };
 
-  const handleGoalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setGoalMsg('Goal saved!');
-    setTimeout(() => setGoalMsg(''), 2000);
-  };
-
   return (
     <div>
       <h2>Stats</h2>
+      
       <div>
         <label>Show data for: </label>
         {(['day', 'week', 'month', 'year'] as Range[]).map(r => (
@@ -177,74 +195,78 @@ const Stats: React.FC<{ userId: string }> = ({ userId }) => {
 
       <div>
         <h3>Total Time: {formatTime(totalMinutes)}</h3>
-        {goal > 0 && (
+        
+        {goalInput > 0 && (
             <div>
-            Goal: {goal} hours per {range}
-            <br />
-            {totalMinutes / 60 > goal ? (
+              Goal: {scaledGoal} hours per {range}
+              <br />
+              {totalMinutes / 60 > scaledGoal ? (
                 <span style={{ color: 'red' }}>Goal exceeded!</span>
-            ) : (
+              ) : (
                 <span style={{ color: 'green' }}>Within goal</span>
-            )}
+              )}
             </div>
         )}
       </div>
 
-      <form onSubmit={handleGoalSubmit}>
-        <label>
-          Set goal (hours per {range}):{' '}
-          <input
-            type="number"
-            value={goal}
-            onChange={e => setGoal(Number(e.target.value))}
-            min={0}
-            step={0.5}
-          />
-        </label>
+    <form onSubmit={handleGoalSave} style={{ margin: '1rem 0' }}>
+      <label>
+        Set goal (hours per day):
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <input
+          id="goalInput"
+          type="number"
+          value={goalInput}
+          onChange={e => setGoalInput(Number(e.target.value))}
+          min={0}
+          step={0.1}
+          style={{ width: '80px' }}
+        />
         <button type="submit">Save Goal</button>
-        <span>{goalMsg}</span>
-      </form>
-
-      <div style={{ maxWidth: 600, margin: '2em 0' }}>
-        <Line data={chartData} />
       </div>
+    </form>
 
-      <div>
-        <h3>Per-Game Stats ({rangeLabels[range]})</h3>
-        <table>
-            <thead>
+    <div style={{ maxWidth: 600, margin: '2em 0' }}>
+      <Line data={chartData} />
+    </div>
+
+    <div>
+      <h3>Per-Game Stats ({rangeLabels[range]})</h3>
+      <table>
+          <thead>
+          <tr>
+              <th>Game</th>
+              <th>Total Hours</th>
+              <th>Sessions</th>
+          </tr>
+          </thead>
+        
+          <tbody>
+          {gameStats.length === 0 ? (
             <tr>
-                <th>Game</th>
-                <th>Total Hours</th>
-                <th>Sessions</th>
+              <td colSpan={3}>No data for this range.</td>
             </tr>
-            </thead>
-          
-            <tbody>
-            {gameStats.length === 0 ? (
-              <tr>
-                <td colSpan={3}>No data for this range.</td>
+          ) : (
+            gameStats.map(stat => (
+              <tr key={stat._id}>
+                <td>{stat.game?.title || 'Unknown Game'}</td>
+                <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
+                <td>{stat.sessions}</td>
               </tr>
-            ) : (
-              gameStats.map(stat => (
-                <tr key={stat._id}>
-                  <td>{stat.game?.title || 'Unknown Game'}</td>
-                  <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
-                  <td>{stat.sessions}</td>
-                </tr>
-              ))
-            )}
-            </tbody>
-        </table>
-        {gameStats.length > 0 && (
-          <div style={{ maxWidth: 400, margin: '2em auto' }}>
-            <Pie data={pieData} options={pieOptions} />
-          </div>
-        )}
-
-      </div>
+            ))
+          )}
+          </tbody>
+      </table>
+      {gameStats.length > 0 && (
+        <div style={{ maxWidth: 400, margin: '2em auto' }}>
+          <Pie data={pieData} options={pieOptions} />
+        </div>
+      )}
 
     </div>
+
+  </div>
   );
 };
 
