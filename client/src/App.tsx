@@ -12,6 +12,7 @@ function App() {
   const [userId, setUserId] = useState<string | null>(() => localStorage.getItem('userId'));
   const [username, setUsername] = useState<string | null>(() => localStorage.getItem('username'));
   const [games, setGames] = useState([]);
+  const [statsRefreshKey, setStatsRefreshKey] = useState(0);
 
   const handleLogin = (id: string, username: string) => {
     setUserId(id);
@@ -62,7 +63,7 @@ function App() {
                       {userId && username && <div><br />Welcome, {username}!</div>}
                       <GameList games={games} refreshGames={fetchGames} />
                       <hr className="section-divider" />
-                      <SessionList userId={userId} games={games} />
+                      <SessionList userId={userId} games={games} onSessionsChanged={() => setStatsRefreshKey(k => k + 1)} />
                       <hr className="section-divider" />                  
                     </>
                   ) : (
@@ -88,7 +89,7 @@ function App() {
 
       {userId && (
         <aside className="stats-sidebar">
-          <Stats userId={userId} />
+          <Stats userId={userId} key={statsRefreshKey} />
         </aside>
       )}
       

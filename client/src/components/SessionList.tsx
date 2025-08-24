@@ -16,6 +16,7 @@ interface Session {
 interface SessionListProps {
   userId: string;
   games: Game[];
+  onSessionsChanged?: () => void;
 }
 
 function formatDuration(minutes: number): string {
@@ -34,7 +35,7 @@ function toLocalInputValue(isoString: string) {
   return localISO;
 }
 
-const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
+const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChanged }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [gameId, setGameId] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -67,6 +68,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
       setGameId("");
       setStartTime("");
       setEndTime("");
+      if (onSessionsChanged) onSessionsChanged();
     } catch (err) {
       console.error(err);
     }
@@ -98,6 +100,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
       );
       setSessions(res.data);
       cancelEdit();
+      if (onSessionsChanged) onSessionsChanged();
     } catch (err) {
       console.error(err);
     }
@@ -111,6 +114,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games }) => {
     try {
       await axios.delete(`http://localhost:5000/api/sessions/${sessionId}`);
       setSessions(sessions.filter((s) => s._id !== sessionId));
+      if (onSessionsChanged) onSessionsChanged();
     } catch (err) {
       console.error(err);
     }
