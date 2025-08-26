@@ -1,16 +1,11 @@
 -STATS
 	-weekly report emailed to each user perhaps (with graphs??)
-	-update graphs (do I want mins or hours?)
-		-for "Today" option, show hours of the day on x-axis?
-		-change x-axis for past month and past year options
 
 -GAMES
-	-show which user added each game
 	-have owner be able to remove games?
 
 -SESSIONS
-	-default amount of displayed sessions
-	-options for displaying more sessions
+	-
 
 -USERS
 	-option for users to have publicly viewable account and stats
@@ -20,4 +15,4 @@
 	-
 
 -OTHER
-	-update path for HTTP api requests (currently all hardcoded as "http://localhost:5000/...")
+	-update paths for HTTP api requests? (currently all hardcoded as "http://localhost:5000/...")
