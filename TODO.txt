@@ -6,11 +6,9 @@
 
 -GAMES
 	-show which user added each game
-	-favourites list for games
 	-have owner be able to remove games?
 
 -SESSIONS
-	-disallow session start time that is after end time?
 	-default amount of displayed sessions
 	-options for displaying more sessions
 
@@ -19,9 +17,7 @@
 	-another page with list of users or something with aggregated stats?
 
 -HTML/CSS
-	-small divider between new Game/Session area and list of Games/Sessions
-	-make edit/delete buttons smaller?
-	-fix small issue of editing session extends buttons outside of background borders
+	-
 
 -OTHER
-	-hide login button when logged in already (only show logout)
+	-update path for HTTP api requests (currently all hardcoded as "http://localhost:5000/...")
