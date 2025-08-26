@@ -45,6 +45,16 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
   const [editGameId, setEditGameId] = useState("");
   const [editStartTime, setEditStartTime] = useState("");
   const [editEndTime, setEditEndTime] = useState("");
+  const [sessionsPerPage, setSessionsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const sortedSessions = [...sessions].sort(
+  (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+  );
+  const totalPages = Math.ceil(sortedSessions.length / sessionsPerPage);
+  const paginatedSessions = sortedSessions.slice(
+    (currentPage - 1) * sessionsPerPage,
+    currentPage * sessionsPerPage
+  );
 
   useEffect(() => {
     axios
@@ -138,7 +148,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
 
   return (
     <div>
-      <h2>Sessions</h2>
+      <h2>SESSIONS</h2>
 
       <form onSubmit={addSession}>
         <select
@@ -183,6 +193,43 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       <hr className="section-divider" />
 
       <h3>Session List</h3>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+        <label>
+          Sessions per page:
+          <select
+            value={sessionsPerPage}
+            onChange={e => {
+              setSessionsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{ marginLeft: 8, width: '70px' }}
+          >
+            {[5, 10, 25, 50, 100].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </label>
+        <div className="pagination">
+          <button
+            type="button"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Prev
+          </button>
+          <span style={{ margin: "0 8px" }}>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
       <table className="session-table">
         <thead>
           <tr>
@@ -192,8 +239,9 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
             <th>Actions</th>
           </tr>
         </thead>
+        
         <tbody>
-          {[...sessions].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).map((session) => (
+          {paginatedSessions.map((session) => (
             <tr key={session._id} >
               {editingId === session._id ? (
                 <>
@@ -251,20 +299,33 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
               ) : (
                 <>
                   <td>
-                    {new Date(session.startTime).toLocaleDateString()}{" "}
-                    {new Date(session.startTime).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}{" "} -
-                    <br />
-                    {new Date(session.endTime).toLocaleDateString()}{" "}
-                    {new Date(session.endTime).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })}
+                    {(() => {
+                      const start = new Date(session.startTime);
+                      const end = new Date(session.endTime);
+                      const sameDay = start.toLocaleDateString("en-CA") === end.toLocaleDateString("en-CA");
+                      if (sameDay) {
+                        return (
+                          <>
+                            {start.toLocaleDateString("en-CA")} <br />
+                            {start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}
+                            {" - "}
+                            {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            {start.toLocaleDateString("en-CA")}{" "}
+                            {start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}{" "}
+                            -<br />
+                            {end.toLocaleDateString("en-CA")}{" "}
+                            {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}
+                          </>
+                        );
+                      }
+                    })()}
                   </td>
+
                   <td>
                     {session.game?.iconUrl && (
                       <img
@@ -283,6 +344,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
                     )}
                     {session.game?.title}
                   </td>
+
                   <td>{formatDuration(Math.round(session.duration))}</td>
                   <td>
                     <button type="button" className="small-btn" onClick={() => startEdit(session)}>

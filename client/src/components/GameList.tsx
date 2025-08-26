@@ -89,7 +89,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
 
   return (
     <div>
-      <h2>Games</h2>
+      <h2>GAMES</h2>
 
       <form onSubmit={addGame}>
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Game Title" required />

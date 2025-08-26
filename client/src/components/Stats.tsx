@@ -214,7 +214,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
   return (
     <div>
-      <h2>Stats</h2>
+      <h2>STATS</h2>
 
       <div style={{ textAlign: 'center' }}>
         <label>Show data for: </label> <br />

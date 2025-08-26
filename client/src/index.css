@@ -238,7 +238,8 @@ input[type="datetime-local"] {
 .game-list-item button,
 .datetime-row button,
 .session-table button,
-.game-table button {
+.game-table button,
+.pagination button {
   padding: 0.3rem 0.7rem;
   font-size: 0.95rem;
   min-width: 60px;
