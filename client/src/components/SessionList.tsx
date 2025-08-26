@@ -54,6 +54,12 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
 
   const addSession = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (new Date(startTime) >= new Date(endTime)) {
+      alert("Start time must be before end time.");
+      return;
+    }
+    
     try {
       await axios.post("http://localhost:5000/api/sessions", {
         user: userId,
@@ -89,6 +95,11 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
   };
 
   const saveEdit = async (sessionId: string) => {
+    if (new Date(editStartTime) >= new Date(editEndTime)) {
+      alert("Start time must be before end time.");
+      return;
+    }
+
     try {
       await axios.put(`http://localhost:5000/api/sessions/${sessionId}`, {
         game: editGameId,
@@ -174,6 +185,9 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
         <button type="submit">Add Session</button>
       </form>
 
+      <hr className="section-divider" />
+
+      <h3>Session List</h3>
       <ul className="session-list">
         {sessions.map((session) => (
           <li key={session._id} className="session-list-item">

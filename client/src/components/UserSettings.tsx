@@ -5,10 +5,8 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [emailMsg, setEmailMsg] = useState('');
-
   const [newUsername, setNewUsername] = useState('');
   const [usernameMsg, setUsernameMsg] = useState('');
-
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState('');
@@ -80,7 +78,6 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
           required
         />
         <button type="submit">Update Email</button>
-        <br/>
         <button type="button" onClick={handleRemoveEmail} disabled={!currentEmail}>
             Remove Email Address
         </button>

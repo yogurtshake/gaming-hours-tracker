@@ -179,8 +179,8 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
     <div>
       <h2>Stats</h2>
       
-      <div>
-        <label>Show data for: </label>
+      <div style={{ textAlign: 'center' }}>
+        <label>Show data for: </label> <br />
         {(['day', 'week', 'month', 'year'] as Range[]).map(r => (
           <button
             key={r}
@@ -193,6 +193,8 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
       </div>
       
       <h3>Total Time: {formatTime(totalMinutes)}</h3>
+      
+      <hr className="section-divider" />
       
       <div style={{ textAlign: 'center' }}>
         {goalInput > 0 && (
@@ -208,10 +210,8 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
         )}
 
         <form onSubmit={handleGoalSave} style={{ margin: '1rem 0', display: 'inline-block' }}>
-          <label htmlFor="goalInput" style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Set goal (hours per day):
-          </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            Set goal (hours per day):
             <input
               id="goalInput"
               type="number"
@@ -219,12 +219,14 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
               onChange={e => setGoalInput(Number(e.target.value))}
               min={0}
               step={0.1}
-              style={{ width: '80px' }}
+              style={{ width: '40px' }}
             />
             <button type="submit">Save Goal</button>
           </div>
         </form>
       </div>
+    
+    <hr className="section-divider" />
 
     <div style={{ maxWidth: 600, margin: '2em 0' }}>
       <Line data={chartData} />

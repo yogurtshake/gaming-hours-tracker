@@ -44,13 +44,30 @@ function App() {
 
   return (
     <div className="main-layout">
+ 
+      {userId && (
+        <aside className="games-sidebar">
+          <GameList userId={userId} games={games} refreshGames={fetchGames} />
+        </aside>
+      )}
+      
       <div className="main-content">
         <div className="app-container">
           <Router>
             <nav>
-              <Link to="/">Home</Link> | <Link to="/settings">Settings</Link> | <Link to="/register">Register</Link> | <Link to="/login">Login</Link>
-              {userId && <button onClick={handleLogout}>Logout</button>}
+              {userId ? (
+                <>
+                  <Link to="/">Sessions</Link> | <Link to="/settings">Settings</Link> |{" "}
+                  <button onClick={handleLogout}>Logout</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/register">Register</Link> | <Link to="/login">Login</Link>
+                </>
+              )}
             </nav>
+
+            <hr className="section-divider" />
 
             <Routes>
               <Route path="/register" element={<Register />} />
@@ -62,8 +79,6 @@ function App() {
                   userId ? (
                     <>
                       {userId && username && <div><br />Welcome, {username}!</div>}
-                      <GameList games={games} refreshGames={fetchGames} />
-                      <hr className="section-divider" />
                       <SessionList userId={userId} games={games} onSessionsChanged={() => setStatsRefreshKey(k => k + 1)} />
                       <hr className="section-divider" />                  
                     </>

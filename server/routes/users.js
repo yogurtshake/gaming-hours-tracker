@@ -90,6 +90,35 @@ router.put('/:userId/goal', async (req, res) => {
   res.json({ goalPerDay: user.goalPerDay });
 });
 
+router.get('/:userId/favourites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId).populate('favourites');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user.favourites);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/:userId/favourites', async (req, res) => {
+  const { gameId, action } = req.body;
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (action === 'add') {
+      if (!user.favourites.includes(gameId)) user.favourites.push(gameId);
+    } else if (action === 'remove') {
+      user.favourites = user.favourites.filter(id => id.toString() !== gameId);
+    }
+    await user.save();
+    const populatedUser = await User.findById(req.params.userId).populate('favourites');
+    res.json(populatedUser.favourites);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
