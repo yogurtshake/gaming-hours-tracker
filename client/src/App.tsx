@@ -67,8 +67,6 @@ function App() {
               )}
             </nav>
 
-            <hr className="section-divider" />
-
             <Routes>
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -78,7 +76,8 @@ function App() {
                 element={
                   userId ? (
                     <>
-                      {userId && username && <div><br />Welcome, {username}!</div>}
+                      {userId && username && <div>Logged in as: {username}</div>}
+                      <hr className="section-divider" />
                       <SessionList userId={userId} games={games} onSessionsChanged={() => setStatsRefreshKey(k => k + 1)} />
                       <hr className="section-divider" />                  
                     </>

@@ -3,13 +3,14 @@ import axios from "axios";
 interface Game {
   _id: string;
   title: string;
+  iconUrl?: string;
 }
 
 interface Session {
   _id: string;
-  game: Game;
   startTime: string;
   endTime: string;
+  game: Game;
   duration: number;
 }
 
@@ -19,7 +20,7 @@ interface SessionListProps {
   onSessionsChanged?: () => void;
 }
 
-function formatDuration(minutes: number): string {
+export function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const hrs = Math.floor(minutes / 60);
   const mins = Math.round(minutes % 60);
@@ -54,12 +55,10 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
 
   const addSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (new Date(startTime) >= new Date(endTime)) {
       alert("Start time must be before end time.");
       return;
     }
-    
     try {
       await axios.post("http://localhost:5000/api/sessions", {
         user: userId,
@@ -99,7 +98,6 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       alert("Start time must be before end time.");
       return;
     }
-
     try {
       await axios.put(`http://localhost:5000/api/sessions/${sessionId}`, {
         game: editGameId,
@@ -155,7 +153,6 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
             </option>
           ))}
         </select>
-        
         <div className="datetime-row">
           START TIME:
           <input
@@ -168,7 +165,6 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
             Now
           </button>
         </div>
-        
         <div className="datetime-row">
           END TIME:
           <input
@@ -181,95 +177,127 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
             Now
           </button>
         </div>
-
         <button type="submit">Add Session</button>
       </form>
 
       <hr className="section-divider" />
 
       <h3>Session List</h3>
-      <ul className="session-list">
-        {sessions.map((session) => (
-          <li key={session._id} className="session-list-item">
-            {editingId === session._id ? (
-              <>
-                <select
-                  value={editGameId}
-                  onChange={(e) => setEditGameId(e.target.value)}
-                  required
-                >
-                  <option value="">Select game</option>
-                  {games.map((game) => (
-                    <option key={game._id} value={game._id}>
-                      {game.title}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="datetime-local"
-                  value={editStartTime}
-                  onChange={(e) => setEditStartTime(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditStartTime(getNowForInput())}
-                >
-                  Now
-                </button>
-                <input
-                  type="datetime-local"
-                  value={editEndTime}
-                  onChange={(e) => setEditEndTime(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditEndTime(getNowForInput())}
-                >
-                  Now
-                </button>
-                <button type="button" onClick={() => saveEdit(session._id)}>
-                  Save
-                </button>
-                <button type="button" onClick={cancelEdit}>
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                {session.game?.title} |{" "}
-                {new Date(session.startTime).toLocaleDateString()}{" "}
-                {new Date(session.startTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}{" "}
-                - {new Date(session.endTime).toLocaleDateString()}{" "}
-                {new Date(session.endTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}{" "}
-                | {formatDuration(Math.round(session.duration))}
-                
-                <div className="session-actions">
-                  <button type="button" onClick={() => startEdit(session)}>
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteSession(session._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-                
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+      <table className="session-table">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>Game</th>
+            <th>Duration</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...sessions].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).map((session) => (
+            <tr key={session._id} >
+              {editingId === session._id ? (
+                <>
+                  <td colSpan={2}>
+                    <input
+                      type="datetime-local"
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditStartTime(getNowForInput())}
+                    >
+                      Now
+                    </button>
+                    <input
+                      type="datetime-local"
+                      value={editEndTime}
+                      onChange={(e) => setEditEndTime(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditEndTime(getNowForInput())}
+                    >
+                      Now
+                    </button>
+                  </td>
+
+                  <td>
+                    <select
+                      value={editGameId}
+                      onChange={(e) => setEditGameId(e.target.value)}
+                      required
+                    >
+                      <option value="">Select game</option>
+                      {games.map((game) => (
+                        <option key={game._id} value={game._id}>
+                          {game.title}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+
+                  <td>
+                    <button type="button" onClick={() => saveEdit(session._id)}>
+                      Save
+                    </button>
+                    <button type="button" onClick={cancelEdit}>
+                      Cancel
+                    </button>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td>
+                    {new Date(session.startTime).toLocaleDateString()}{" "}
+                    {new Date(session.startTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}{" "} -
+                    <br />
+                    {new Date(session.endTime).toLocaleDateString()}{" "}
+                    {new Date(session.endTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })}
+                  </td>
+                  <td>
+                    {session.game?.iconUrl && (
+                      <img
+                        src={session.game.iconUrl}
+                        alt={session.game.title}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          objectFit: "cover",
+                          marginRight: 6,
+                          borderRadius: 4,
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                        }}
+                      />
+                    )}
+                    {session.game?.title}
+                  </td>
+                  <td>{formatDuration(Math.round(session.duration))}</td>
+                  <td>
+                    <button type="button" className="small-btn" onClick={() => startEdit(session)}>
+                      Edit
+                    </button>
+                    <button type="button" className="small-btn" onClick={() => deleteSession(session._id)}>
+                      Delete
+                    </button>
+                  </td>
+                </>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { formatDuration } from './SessionList';
 import { Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -59,7 +60,6 @@ const rangeLabels: Record<Range, string> = {
 
 const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => void }> = ({ userId, range, setRange }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [goalMsg, setGoalMsg] = useState('');
   const [gameStats, setGameStats] = useState<GameStat[]>([]);
   const [goalPerDay, setGoalPerDay] = useState<number>(1);
   const [goalInput, setGoalInput] = useState<number>(1);
@@ -123,7 +123,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
             const data = context.chart.data.datasets[0].data;
             const total = data.reduce((a: number, b: number) => a + b, 0);
             const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
-            return `${label}: ${value} min (${percentage}%)`;
+            return `${label}: ${formatDuration(value)} (${percentage}%)`;
           }
         }
       },
@@ -161,24 +161,20 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   });
 
   const totalMinutes = filteredSessions.reduce((sum, s) => sum + s.duration, 0);
-  const totalHours = (totalMinutes / 60).toFixed(2);
 
-  const chartData = {
-    labels: filteredSessions.map(s => new Date(s.startTime).toLocaleDateString()),
-    datasets: [
-      {
-        label: 'Minutes Played',
-        data: filteredSessions.map(s => s.duration),
-        fill: false,
-        borderColor: 'blue',
-      },
-    ],
-  };
+  const sessionsByDay: { [date: string]: number } = {};
+  filteredSessions.forEach(session => {
+    const date = new Date(session.startTime).toISOString().slice(0, 10);
+    sessionsByDay[date] = (sessionsByDay[date] || 0) + session.duration / 60;
+  });
+  const sortedDates = Object.keys(sessionsByDay).sort(); 
+  const chartLabels = sortedDates;
+  const chartData = sortedDates.map(date => sessionsByDay[date]);
 
   return (
     <div>
       <h2>Stats</h2>
-      
+
       <div style={{ textAlign: 'center' }}>
         <label>Show data for: </label> <br />
         {(['day', 'week', 'month', 'year'] as Range[]).map(r => (
@@ -228,9 +224,25 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
     
     <hr className="section-divider" />
 
-    <div style={{ maxWidth: 600, margin: '2em 0' }}>
-      <Line data={chartData} />
-    </div>
+    {range !== 'day' && (
+      <div style={{ maxWidth: 600, margin: '2em 0' }}>
+        <h3>Hours Played ({rangeLabels[range]})</h3>
+        <Line
+          data={{
+            labels: chartLabels,
+            datasets: [
+              {
+                label: 'Hours Played',
+                data: chartData,
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0,0,255,0.1)',
+                tension: 0.3,
+              },
+            ],
+          }}
+        />
+      </div>
+    )}
 
     <div>
       <h3>Per-Game Stats ({rangeLabels[range]})</h3>
@@ -238,7 +250,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
           <thead>
           <tr>
               <th>Game</th>
-              <th>Total Hours</th>
+              <th>Total Time</th>
               <th>Sessions</th>
           </tr>
           </thead>
@@ -252,7 +264,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
             gameStats.map(stat => (
               <tr key={stat._id}>
                 <td>{stat.game?.title || 'Unknown Game'}</td>
-                <td>{(stat.totalMinutes / 60).toFixed(2)}</td>
+                <td>{formatDuration((stat.totalMinutes))}</td>
                 <td>{stat.sessions}</td>
               </tr>
             ))

@@ -1,12 +1,14 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(to right, #e0f7fa, #ffffff);
   color: #333;
   margin: 0;
   min-height: 100vh;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: rgb(255, 145, 0);
   margin-bottom: 1.2rem;
   text-align: center;
@@ -19,7 +21,8 @@ nav {
   margin-bottom: 2rem;
 }
 
-nav a, nav button {
+nav a,
+nav button {
   color: #ff9800;
   background: #fff3e0;
   border: 1px solid #ffb74d;
@@ -30,7 +33,9 @@ nav a, nav button {
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
-nav a.active, nav a:hover, nav button:hover {
+nav a.active,
+nav a:hover,
+nav button:hover {
   background: rgb(255, 145, 0);
   color: #fff;
 }
@@ -48,7 +53,8 @@ label {
   font-weight: 600;
 }
 
-input, select {
+input,
+select {
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -57,7 +63,8 @@ input, select {
   max-width: 300px;
 }
 
-button[type="submit"], button[type="button"] {
+button[type="submit"],
+button[type="button"] {
   background-color: rgb(255, 145, 0);
   color: white;
   border: none;
@@ -68,7 +75,8 @@ button[type="submit"], button[type="button"] {
   transition: background-color 0.3s;
   margin-top: 0.5rem;
 }
-button[type="submit"]:hover, button[type="button"]:hover {
+button[type="submit"]:hover,
+button[type="button"]:hover {
   background-color: rgb(110, 77, 27);
 }
 
@@ -94,7 +102,8 @@ table {
   border-radius: 8px;
   overflow: hidden;
 }
-th, td {
+th,
+td {
   padding: 0.75rem 1rem;
   text-align: center;
 }
@@ -122,7 +131,7 @@ tr:hover {
   background: #f9fbe7;
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   max-width: 350px;
   width: 100%;
 }
@@ -210,7 +219,8 @@ tr:hover {
     flex-direction: column;
     align-items: center;
   }
-  .games-sidebar, .stats-sidebar {
+  .games-sidebar,
+  .stats-sidebar {
     margin-top: 2rem;
     min-width: unset;
     max-width: 700px;
@@ -226,7 +236,9 @@ input[type="datetime-local"] {
 
 .session-list-item button,
 .game-list-item button,
-.datetime-row button {
+.datetime-row button,
+.session-table button,
+.game-table button {
   padding: 0.3rem 0.7rem;
   font-size: 0.95rem;
   min-width: 60px;
@@ -244,4 +256,3 @@ input[type="datetime-local"] {
 .datetime-row {
   flex-wrap: wrap;
 }
-

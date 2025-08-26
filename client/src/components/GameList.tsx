@@ -90,6 +90,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
   return (
     <div>
       <h2>Games</h2>
+
       <form onSubmit={addGame}>
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Game Title" required />
         <input value={iconUrl} onChange={e => setIconUrl(e.target.value)} placeholder="Icon URL" />
@@ -123,32 +124,26 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
 
       <h3>{showFavourites ? 'Favourite Games' : 'All Games'}</h3>
 
-      <ul className="game-list">
-        {displayedGames.length === 0 && (
-          <li style={{ textAlign: 'center', color: '#888' }}>
-            {showFavourites ? 'No favourite games yet.' : 'No games found.'}
-          </li>
-        )}
-        {displayedGames.map(game => (
-          <li key={game._id} className="game-list-item">
-            {editingId === game._id ? (
-              <>
-                <input
-                  value={editTitle}
-                  onChange={e => setEditTitle(e.target.value)}
-                  placeholder="Game Title"
-                  required
-                />
-                <input
-                  value={editIconUrl}
-                  onChange={e => setEditIconUrl(e.target.value)}
-                  placeholder="Icon URL"
-                />
-                <button onClick={() => saveEdit(game._id)} type="button">Save</button>
-                <button onClick={cancelEdit} type="button">Cancel</button>
-              </>
-            ) : (
-              <>
+      <table className="game-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th>Favourite</th>
+            <th>Icon</th>
+            <th>Title</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {displayedGames.length === 0 && (
+            <tr>
+              <td colSpan={4} style={{ textAlign: 'center', color: '#888' }}>
+                {showFavourites ? 'No favourite games yet.' : 'No games found.'}
+              </td>
+            </tr>
+          )}
+          {displayedGames.map(game => (
+            <tr key={game._id}>
+              <td>
                 <button
                   onClick={() => toggleFavourite(game._id)}
                   type="button"
@@ -159,19 +154,56 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
                     cursor: 'pointer',
                     fontSize: '1.3rem',
                     color: isFavourite(game._id) ? '#ff9800' : '#bbb',
-                    marginRight: '0.5rem',
                   }}
                 >
                   {isFavourite(game._id) ? '★' : '☆'}
                 </button>
-                {game.iconUrl && <img src={game.iconUrl} alt={game.title} width={32} style={{ verticalAlign: 'middle', marginRight: 8 }} />}
-                {game.title}
-                <button onClick={() => startEdit(game)} type="button" style={{ marginLeft: 'auto' }}>Edit</button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+              </td>
+              <td>
+                {game.iconUrl && (
+                  <img
+                    src={game.iconUrl}
+                    alt={game.title}
+                    width={32}
+                    style={{ verticalAlign: 'middle', borderRadius: 4 }}
+                  />
+                )}
+              </td>
+              <td>
+                {editingId === game._id ? (
+                  <>
+                    <input
+                      value={editTitle}
+                      onChange={e => setEditTitle(e.target.value)}
+                      placeholder="Game Title"
+                      required
+                      style={{ marginRight: 8 }}
+                    />
+                    <input
+                      value={editIconUrl}
+                      onChange={e => setEditIconUrl(e.target.value)}
+                      placeholder="Icon URL"
+                      style={{ marginRight: 8 }}
+                    />
+                  </>
+                ) : (
+                  game.title
+                )}
+              </td>
+              <td>
+                {editingId === game._id ? (
+                  <>
+                    <button type="button" className="small-btn" onClick={() => saveEdit(game._id)}>Save</button>
+                    <button type="button" className="small-btn" onClick={cancelEdit}>Cancel</button>
+                  </>
+                ) : (
+                  <button type="button" className="small-btn" onClick={() => startEdit(game)}>Edit</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

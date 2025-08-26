@@ -67,6 +67,8 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
     <div>
       <h2>User Settings</h2>
 
+      <hr className="section-divider" />
+
       <form onSubmit={handleEmailUpdate}>
         <h3>Update Email Address</h3>
         <div>Current email: <b>{currentEmail ? currentEmail : 'none'}</b></div>
