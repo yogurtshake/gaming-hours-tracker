@@ -162,14 +162,55 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
   const totalMinutes = filteredSessions.reduce((sum, s) => sum + s.duration, 0);
 
-  const sessionsByDay: { [date: string]: number } = {};
-  filteredSessions.forEach(session => {
-    const date = new Date(session.startTime).toISOString().slice(0, 10);
-    sessionsByDay[date] = (sessionsByDay[date] || 0) + session.duration / 60;
-  });
-  const sortedDates = Object.keys(sessionsByDay).sort(); 
-  const chartLabels = sortedDates;
-  const chartData = sortedDates.map(date => sessionsByDay[date]);
+  
+  function getWeekLabel(date: Date) {
+    const temp = new Date(date.getTime());
+    temp.setHours(0, 0, 0, 0);
+    temp.setDate(temp.getDate() + 3 - ((temp.getDay() + 6) % 7));
+    const week1 = new Date(temp.getFullYear(), 0, 4);
+    const weekNo = 1 + Math.round(
+      ((temp.getTime() - week1.getTime()) / 86400000
+        - 3 + ((week1.getDay() + 6) % 7)) / 7
+    );
+    return `${temp.getFullYear()}-W${weekNo.toString().padStart(2, '0')}`;
+  }
+
+  function getMonthLabel(date: Date) {
+    return date.toISOString().slice(0, 7);
+  }
+
+  let chartLabels: string[] = [];
+  let chartData: number[] = [];
+
+  if (range === 'month') {
+    const sessionsByWeek: { [week: string]: number } = {};
+    filteredSessions.forEach(session => {
+      const week = getWeekLabel(new Date(session.startTime));
+      sessionsByWeek[week] = (sessionsByWeek[week] || 0) + session.duration / 60;
+    });
+    const sortedWeeks = Object.keys(sessionsByWeek).sort();
+    chartLabels = sortedWeeks;
+    chartData = sortedWeeks.map(week => sessionsByWeek[week]);
+  } else if (range === 'year') {
+    const sessionsByMonth: { [month: string]: number } = {};
+    filteredSessions.forEach(session => {
+      const month = getMonthLabel(new Date(session.startTime));
+      sessionsByMonth[month] = (sessionsByMonth[month] || 0) + session.duration / 60;
+    });
+    const sortedMonths = Object.keys(sessionsByMonth).sort();
+    chartLabels = sortedMonths;
+    chartData = sortedMonths.map(month => sessionsByMonth[month]);
+  } else {
+    const sessionsByDay: { [date: string]: number } = {};
+    filteredSessions.forEach(session => {
+      const date = new Date(session.startTime).toISOString().slice(0, 10);
+      sessionsByDay[date] = (sessionsByDay[date] || 0) + session.duration / 60;
+    });
+    const sortedDates = Object.keys(sessionsByDay).sort();
+    chartLabels = sortedDates;
+    chartData = sortedDates.map(date => sessionsByDay[date]);
+  }
+
 
   return (
     <div>
