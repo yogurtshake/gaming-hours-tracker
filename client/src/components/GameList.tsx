@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { usePagination } from "../hooks/pagination";
+import PaginationControls from "./PaginationControls";
 
 interface Game {
   _id: string;
@@ -22,6 +24,15 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
   const [editIconUrl, setEditIconUrl] = useState('');
   const [showFavourites, setShowFavourites] = useState(true);
   const [favourites, setFavourites] = useState<Game[]>([]);
+  const displayedGames = showFavourites ? favourites : games;
+  const {
+    paginatedItems,
+    itemsPerPage,
+    setItemsPerPage,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+  } = usePagination(displayedGames, 5);
 
   const addGame = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,8 +96,6 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
     }
   };
 
-  const displayedGames = showFavourites ? favourites : games;
-
   return (
     <div>
       <h2>GAMES</h2>
@@ -124,6 +133,14 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
 
       <h3>{showFavourites ? 'Favourite Games' : 'All Games'}</h3>
 
+      <PaginationControls
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
+
       <table className="game-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
@@ -133,6 +150,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
             <th>Actions</th>
           </tr>
         </thead>
+        
         <tbody>
           {displayedGames.length === 0 && (
             <tr>
@@ -141,7 +159,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
               </td>
             </tr>
           )}
-          {displayedGames.map(game => (
+          {paginatedItems.map(game => (
             <tr key={game._id}>
               <td>
                 <button

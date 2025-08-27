@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { usePagination } from '../hooks/pagination';
+import PaginationControls from './PaginationControls';
 import { formatDuration } from './SessionList';
 import { Line, Pie } from 'react-chartjs-2';
 import {
@@ -63,6 +65,15 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   const [gameStats, setGameStats] = useState<GameStat[]>([]);
   const [goalPerDay, setGoalPerDay] = useState<number>(1);
   const [goalInput, setGoalInput] = useState<number>(1);
+  const {
+    paginatedItems: paginatedStats,
+    itemsPerPage,
+    setItemsPerPage,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+  } = usePagination(gameStats, 5);
+
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
@@ -287,6 +298,15 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
     <div>
       <h3>Per-Game Stats ({rangeLabels[range]})</h3>
+      
+      <PaginationControls
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
+
       <table>
           <thead>
           <tr>
@@ -297,20 +317,21 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
           </thead>
         
           <tbody>
-          {gameStats.length === 0 ? (
-            <tr>
-              <td colSpan={3}>No data for this range.</td>
-            </tr>
-          ) : (
-            gameStats.map(stat => (
-              <tr key={stat._id}>
-                <td>{stat.game?.title || 'Unknown Game'}</td>
-                <td>{formatDuration((stat.totalMinutes))}</td>
-                <td>{stat.sessions}</td>
+            {paginatedStats.length === 0 ? (
+              <tr>
+                <td colSpan={3}>No data for this range.</td>
               </tr>
-            ))
-          )}
+            ) : (
+              paginatedStats.map(stat => (
+                <tr key={stat._id}>
+                  <td>{stat.game?.title || 'Unknown Game'}</td>
+                  <td>{formatDuration((stat.totalMinutes))}</td>
+                  <td>{stat.sessions}</td>
+                </tr>
+              ))
+            )}
           </tbody>
+
       </table>
       {gameStats.length > 0 && (
         <div style={{ maxWidth: 400, margin: '2em auto' }}>

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { usePagination } from "../hooks/pagination";
+import PaginationControls from "./PaginationControls";
+
 interface Game {
   _id: string;
   title: string;
@@ -45,16 +48,17 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
   const [editGameId, setEditGameId] = useState("");
   const [editStartTime, setEditStartTime] = useState("");
   const [editEndTime, setEditEndTime] = useState("");
-  const [sessionsPerPage, setSessionsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
   const sortedSessions = [...sessions].sort(
   (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
   );
-  const totalPages = Math.ceil(sortedSessions.length / sessionsPerPage);
-  const paginatedSessions = sortedSessions.slice(
-    (currentPage - 1) * sessionsPerPage,
-    currentPage * sessionsPerPage
-  );
+  const {
+    paginatedItems: paginatedSessions,
+    itemsPerPage,
+    setItemsPerPage,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+  } = usePagination(sortedSessions, 5);
 
   useEffect(() => {
     axios
@@ -193,42 +197,14 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       <hr className="section-divider" />
 
       <h3>Session List</h3>
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
-        <label>
-          Sessions per page:
-          <select
-            value={sessionsPerPage}
-            onChange={e => {
-              setSessionsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            style={{ marginLeft: 8, width: '70px' }}
-          >
-            {[5, 10, 25, 50, 100].map(n => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </label>
-        <div className="pagination">
-          <button
-            type="button"
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </button>
-          <span style={{ margin: "0 8px" }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      
+      <PaginationControls
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
+      />
 
       <table className="session-table">
         <thead>
