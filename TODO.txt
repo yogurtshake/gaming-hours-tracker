@@ -1,5 +1,7 @@
 -STATS
 	-weekly report emailed to each user perhaps (with graphs??)
+		-re-write email contents with per-game stats, unsubscribe instructions, etc.
+	-add "prev/next" selection for all selectable time frames (day, week, month, year)
 
 -GAMES
 	-have owner be able to remove games?
@@ -16,3 +18,4 @@
 
 -OTHER
 	-update paths for HTTP api requests? (currently all hardcoded as "http://localhost:5000/...")
+	-have the server email me when a new user registers
