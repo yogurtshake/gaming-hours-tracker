@@ -2,6 +2,17 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_SERVER,
+  port: Number(process.env.SMTP_PORT),
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 router.post('/register', async (req, res) => {
   try {
@@ -10,6 +21,17 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ username: lowerUsername, password: hashedPassword });
     await user.save();
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail) {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: adminEmail,
+        subject: 'Gaming Hours Tracker: New User Registration',
+        text: `Dear admin, \n\nA new user has registered:\n\nUsername: ${user.username}`,
+      });
+    }
+
     res.status(201).json({ message: 'User created', userId: user._id });
   } catch (err) {
     if (err.code === 11000) {
