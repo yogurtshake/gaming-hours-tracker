@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -15,7 +16,18 @@ app.use('/api/games', gameRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/users', userRoutes);
 
-const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running');
+  });
+}
+
+const PORT = 5000;
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
@@ -26,7 +38,3 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => {
     console.error('MongoDB connection error:', err);
   });
-
-app.get('/', (req, res) => {
-  res.send('API is running');
-});
