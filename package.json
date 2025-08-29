@@ -4,5 +4,6 @@
   },
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix client\""
-  }
+  },
+  "homepage": "/gaming-hours-tracker"
 }
