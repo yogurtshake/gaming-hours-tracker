@@ -11,7 +11,7 @@ const Login: React.FC<{ onLogin: (userId: string, username: string) => void }> =
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', {
+      const res = await axios.post('/users/login', {
         username, password
       });
       setMessage('Login successful!');

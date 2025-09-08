@@ -37,7 +37,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
   const addGame = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/games', { title, iconUrl });
+      await axios.post('/games', { title, iconUrl });
       setTitle('');
       setIconUrl('');
       setMessage('');
@@ -63,14 +63,14 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
 
   const saveEdit = async (gameId: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/games/${gameId}`, {
+      await axios.put(`/games/${gameId}`, {
         title: editTitle,
         iconUrl: editIconUrl,
       });
       cancelEdit();
       refreshGames();
       if (userId) {
-        const res = await axios.get(`http://localhost:5000/api/users/${userId}/favourites`);
+        const res = await axios.get(`/users/${userId}/favourites`);
         setFavourites(res.data);
       }
     } catch (err: any) {
@@ -80,7 +80,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
 
   useEffect(() => {
     if (userId) {
-      axios.get(`http://localhost:5000/api/users/${userId}/favourites`).then(res => setFavourites(res.data));
+      axios.get(`/users/${userId}/favourites`).then(res => setFavourites(res.data));
     }
   }, [userId]);
 
@@ -89,7 +89,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
   const toggleFavourite = async (gameId: string) => {
     const action = isFavourite(gameId) ? 'remove' : 'add';
     try {
-      const res = await axios.post(`http://localhost:5000/api/users/${userId}/favourites`, { gameId, action });
+      const res = await axios.post(`/users/${userId}/favourites`, { gameId, action });
       setFavourites(res.data);
     } catch (err) {
       setMessage('Failed to update favourites');

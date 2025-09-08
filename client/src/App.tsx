@@ -31,7 +31,7 @@ function App() {
 
   const fetchGames = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/games');
+      const res = await axios.get('/games');
       setGames(res.data);
     } catch (err) {
       console.error(err);

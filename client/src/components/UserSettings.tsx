@@ -12,7 +12,7 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
   const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/users/${userId}`)
+    axios.get(`/users/${userId}`)
       .then(res => setCurrentEmail(res.data.email || null))
       .catch(() => setCurrentEmail(null));
   }, [userId]);
@@ -20,7 +20,7 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
   const handleEmailUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put('http://localhost:5000/api/users/email', { userId, email });
+      await axios.put('/users/email', { userId, email });
       setEmailMsg('Email updated!');
       setCurrentEmail(email);
       setEmail('');
@@ -31,7 +31,7 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
 
   const handleRemoveEmail = async () => {
     try {
-        await axios.put('http://localhost:5000/api/users/email', { userId, email: '' });
+        await axios.put('/users/email', { userId, email: '' });
         setCurrentEmail(null);
         setEmailMsg('Email removed!');
     } catch (err: any) {
@@ -42,7 +42,7 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
   const handleUsernameUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.put('http://localhost:5000/api/users/username', { userId, newUsername });
+      const res = await axios.put('/users/username', { userId, newUsername });
       setUsernameMsg('Username updated!');
       onUsernameChange(res.data.username);
       setNewUsername('');
@@ -54,7 +54,7 @@ const UserSettings: React.FC<{ userId: string; username: string | null; onUserna
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put('http://localhost:5000/api/users/password', { userId, oldPassword, newPassword });
+      await axios.put('/users/password', { userId, oldPassword, newPassword });
       setPasswordMsg('Password updated!');
       setOldPassword('');
       setNewPassword('');

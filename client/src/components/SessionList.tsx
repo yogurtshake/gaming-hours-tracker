@@ -62,7 +62,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/sessions/${userId}`)
+      .get(`/sessions/${userId}`)
       .then((res) => setSessions(res.data))
       .catch((err) => console.error(err));
   }, [userId]);
@@ -74,15 +74,13 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       return;
     }
     try {
-      await axios.post("http://localhost:5000/api/sessions", {
+      await axios.post("/sessions", {
         user: userId,
         game: gameId,
         startTime,
         endTime,
       });
-      const res = await axios.get(
-        `http://localhost:5000/api/sessions/${userId}`
-      );
+      const res = await axios.get(`/sessions/${userId}`);
       setSessions(res.data);
       setGameId("");
       setStartTime("");
@@ -113,14 +111,12 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       return;
     }
     try {
-      await axios.put(`http://localhost:5000/api/sessions/${sessionId}`, {
+      await axios.put(`/sessions/${sessionId}`, {
         game: editGameId,
         startTime: editStartTime,
         endTime: editEndTime,
       });
-      const res = await axios.get(
-        `http://localhost:5000/api/sessions/${userId}`
-      );
+      const res = await axios.get(`/sessions/${userId}`);
       setSessions(res.data);
       cancelEdit();
       if (onSessionsChanged) onSessionsChanged();
@@ -135,7 +131,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
     );
     if (!confirmed) return;
     try {
-      await axios.delete(`http://localhost:5000/api/sessions/${sessionId}`);
+      await axios.delete(`/sessions/${sessionId}`);
       setSessions(sessions.filter((s) => s._id !== sessionId));
       if (onSessionsChanged) onSessionsChanged();
     } catch (err) {

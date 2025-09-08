@@ -76,12 +76,12 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
+    axios.get(`/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
   }, [userId]);
 
   useEffect(() => {
   axios
-    .get(`http://localhost:5000/api/sessions/${userId}/game-stats?range=${range}`)
+    .get(`/sessions/${userId}/game-stats?range=${range}`)
     .then(res => {
       setGameStats(res.data);
     })
@@ -89,7 +89,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   }, [userId, range]);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/users/${userId}/goal`)
+    axios.get(`/users/${userId}/goal`)
       .then(res => {
         setGoalPerDay(res.data.goalPerDay);
         setGoalInput(res.data.goalPerDay);
@@ -98,7 +98,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
   const handleGoalSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.put(`http://localhost:5000/api/users/${userId}/goal`, { goalPerDay: goalInput });
+    await axios.put(`/users/${userId}/goal`, { goalPerDay: goalInput });
     setGoalPerDay(goalInput);
   };
 
