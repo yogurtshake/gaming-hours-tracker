@@ -53,7 +53,7 @@ function App() {
       
       <div className="main-content">
         <div className="app-container">
-          <Router>
+          <Router basename="/gaming-hours-tracker">
             <nav>
               {userId ? (
                 <>
