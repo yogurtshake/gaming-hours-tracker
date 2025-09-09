@@ -4,7 +4,7 @@
 
 ## What's Happening Here?
 
-stuff
+some stuff
 
 ## Dependencies: 
 
