@@ -6,7 +6,7 @@
 
 stuff
 
-## dependencies: 
+## Dependencies: 
 
 ### app functionality
 
