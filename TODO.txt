@@ -14,7 +14,7 @@
 	-another page with list of users or something with aggregated stats?
 
 -HTML/CSS
-	-
+	-FIX MOBILE VIEW
 
 -OTHER
 	-write PM2 instructions to setup_instructions.txt
