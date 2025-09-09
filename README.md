@@ -11,8 +11,11 @@ stuff
 ### app functionality
 
 Node.js,
+
 React,
+
 MongoDB,
+
 *everything found in the node_modules folders*
 
 ### hosting functionality
