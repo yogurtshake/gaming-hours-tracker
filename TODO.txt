@@ -17,6 +17,4 @@
 	-
 
 -OTHER
-	-update paths for HTTP api requests? (currently all hardcoded as "http://localhost:5000/...")
-	-have the server email me when a new user registers
 	-write PM2 instructions to setup_instructions.txt
