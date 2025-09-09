@@ -13,7 +13,7 @@ stuff
 Node.js,
 React,
 MongoDB,
-**everything found in the node_modules folders**
+*everything found in the node_modules folders*
 
 ### hosting functionality
 
