@@ -30,17 +30,10 @@ ChartJS.register(ArcElement);
 
 interface Session {
   _id: string;
-  game: { _id: string; title: string };
+  game: { _id: string; title: string; iconUrl?: string };
   startTime: string;
   endTime: string;
   duration: number;
-}
-
-interface GameStat {
-  _id: string;
-  totalMinutes: number;
-  sessions: number;
-  game: { _id: string; title: string };
 }
 
 function formatTime(minutes: number) {
@@ -62,32 +55,13 @@ const rangeLabels: Record<Range, string> = {
 
 const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => void }> = ({ userId, range, setRange }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [gameStats, setGameStats] = useState<GameStat[]>([]);
   const [goalPerDay, setGoalPerDay] = useState<number>(1);
   const [goalInput, setGoalInput] = useState<number>(1);
   const [chartUnit, setChartUnit] = useState<'hours' | 'minutes'>('hours');
-  const {
-    paginatedItems: paginatedStats,
-    itemsPerPage,
-    setItemsPerPage,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-  } = usePagination(gameStats, 5);
-
 
   useEffect(() => {
     axios.get(`/sessions/${userId}`).then(res => setSessions(res.data)).catch(() => setSessions([]));
   }, [userId]);
-
-  useEffect(() => {
-  axios
-    .get(`/sessions/${userId}/game-stats?range=${range}`)
-    .then(res => {
-      setGameStats(res.data);
-    })
-    .catch(err => setGameStats([]));
-  }, [userId, range]);
 
   useEffect(() => {
     axios.get(`/users/${userId}/goal`)
@@ -111,40 +85,6 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   };
   
   const scaledGoal = goalPerDay * rangeMultipliers[range];
-
-  const pieData = {
-    labels: gameStats.map(stat => stat.game?.title || 'Unknown Game'),
-    datasets: [
-      {
-        data: gameStats.map(stat => stat.totalMinutes),
-        backgroundColor: [
-          '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
-          '#166a8f', '#00a950', '#58595b', '#8549ba'
-        ],
-      },
-    ],
-  };
-
-  const pieOptions = {
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(context: any) {
-            const label = context.label || '';
-            const value = context.parsed || 0;
-            const data = context.chart.data.datasets[0].data;
-            const total = data.reduce((a: number, b: number) => a + b, 0);
-            const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
-            return `${label}: ${formatDuration(value)} (${percentage}%)`;
-          }
-        }
-      },
-      legend: {
-        display: true,
-        position: 'bottom' as const,
-      }
-    }
-  };
 
   const filteredSessions = sessions.filter(session => {
     const now = new Date();
@@ -268,6 +208,62 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
     chartData = sortedDates.map(date => sessionsByDay[date]);
   }
 
+
+  let perGameStats: { [gameId: string]: { _id: string; totalMinutes: number; sessions: number; game: Session['game'] } } = {};
+
+  filteredSessions.forEach(session => {
+    let start = new Date(session.startTime);
+    let end = new Date(session.endTime);
+
+    while (start < end) {
+      let nextDay = new Date(start);
+      nextDay.setHours(24, 0, 0, 0);
+
+      let segmentEnd = end < nextDay ? end : nextDay;
+
+      let includeSegment = false;
+      if (range === 'day') {
+        const now = new Date();
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(todayStart);
+        todayEnd.setHours(24, 0, 0, 0);
+        includeSegment = start < todayEnd && segmentEnd > todayStart;
+      } else if (range === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        includeSegment = start >= weekAgo;
+      } else if (range === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        includeSegment = start >= monthAgo;
+      } else if (range === 'year') {
+        const yearAgo = new Date();
+        yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+        includeSegment = start >= yearAgo;
+      } else {
+        includeSegment = true;
+      }
+
+      if (includeSegment) {
+        let minutes = (segmentEnd.getTime() - start.getTime()) / 60000;
+        const gameId = session.game._id;
+        if (!perGameStats[gameId]) {
+          perGameStats[gameId] = {
+            _id: gameId,
+            totalMinutes: 0,
+            sessions: 0,
+            game: session.game,
+          };
+        }
+        perGameStats[gameId].totalMinutes += minutes;
+        perGameStats[gameId].sessions += 1;
+      }
+
+      start = nextDay;
+    }
+  });
+
   const totalHours =
     range === 'month'
       ? chartData.reduce((sum, hrs) => sum + hrs, 0)
@@ -278,9 +274,55 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   const totalMinutes = totalHours * 60;
 
   const displayedChartData =
-  chartUnit === 'hours'
-    ? chartData
-    : chartData.map(h => h * 60);
+    chartUnit === 'hours'
+      ? chartData
+      : chartData.map(h => h * 60);
+
+
+  const perGameStatsArray = Object.values(perGameStats);
+
+  const {
+    paginatedItems: paginatedStats,
+    itemsPerPage,
+    setItemsPerPage,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+  } = usePagination(perGameStatsArray, 5);
+
+  const pieData = {
+    labels: perGameStatsArray.map(stat => stat.game?.title || 'Unknown Game'),
+    datasets: [
+      {
+        data: perGameStatsArray.map(stat => stat.totalMinutes),
+        backgroundColor: [
+          '#4dc9f6', '#f67019', '#f53794', '#537bc4', '#acc236',
+          '#166a8f', '#00a950', '#58595b', '#8549ba'
+        ],
+      },
+    ],
+  };
+
+  const pieOptions = {
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const data = context.chart.data.datasets[0].data;
+            const total = data.reduce((a: number, b: number) => a + b, 0);
+            const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+            return `${label}: ${formatDuration(value)} (${percentage}%)`;
+          }
+        }
+      },
+      legend: {
+        display: true,
+        position: 'bottom' as const,
+      }
+    }
+  };
 
   return (
     <div>
@@ -399,8 +441,17 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
             ) : (
               paginatedStats.map(stat => (
                 <tr key={stat._id}>
-                  <td>{stat.game?.title || 'Unknown Game'}</td>
-                  <td>{formatDuration((stat.totalMinutes))}</td>
+                  <td>
+                    {stat.game?.iconUrl && (
+                      <img
+                        src={stat.game.iconUrl}
+                        alt={stat.game.title}
+                        style={{ width: 24, height: 24, verticalAlign: 'middle', marginRight: 8, borderRadius: 4 }}
+                      />
+                    )}
+                    {stat.game?.title || 'Unknown Game'}
+                  </td>
+                  <td>{formatDuration(stat.totalMinutes)}</td>
                   <td>{stat.sessions}</td>
                 </tr>
               ))
@@ -408,7 +459,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
           </tbody>
 
       </table>
-      {gameStats.length > 0 && (
+      {perGameStatsArray.length > 0 && (
         <div style={{ maxWidth: 400, margin: '2em auto' }}>
           <Pie data={pieData} options={pieOptions} />
         </div>
