@@ -65,6 +65,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
   const [gameStats, setGameStats] = useState<GameStat[]>([]);
   const [goalPerDay, setGoalPerDay] = useState<number>(1);
   const [goalInput, setGoalInput] = useState<number>(1);
+  const [chartUnit, setChartUnit] = useState<'hours' | 'minutes'>('hours');
   const {
     paginatedItems: paginatedStats,
     itemsPerPage,
@@ -147,32 +148,37 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
   const filteredSessions = sessions.filter(session => {
     const now = new Date();
-    const sessionDate = new Date(session.startTime);
+    const sessionStart = new Date(session.startTime);
+    const sessionEnd = new Date(session.endTime);
+
     switch (range) {
-      case 'day':
-        return sessionDate.toDateString() === now.toDateString();
+      case 'day': {
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(todayStart);
+        todayEnd.setHours(24, 0, 0, 0);
+
+        return sessionStart < todayEnd && sessionEnd > todayStart;
+      }
       case 'week': {
         const weekAgo = new Date(now);
         weekAgo.setDate(now.getDate() - 7);
-        return sessionDate >= weekAgo;
+        return sessionStart >= weekAgo;
       }
       case 'month': {
         const monthAgo = new Date(now);
         monthAgo.setMonth(now.getMonth() - 1);
-        return sessionDate >= monthAgo;
+        return sessionStart >= monthAgo;
       }
       case 'year': {
         const yearAgo = new Date(now);
         yearAgo.setFullYear(now.getFullYear() - 1);
-        return sessionDate >= yearAgo;
+        return sessionStart >= yearAgo;
       }
       default:
         return true;
     }
   });
-
-  const totalMinutes = filteredSessions.reduce((sum, s) => sum + s.duration, 0);
-
   
   function getWeekLabel(date: Date) {
     const temp = new Date(date.getTime());
@@ -192,6 +198,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
   let chartLabels: string[] = [];
   let chartData: number[] = [];
+  let sessionsByDay: { [date: string]: number } = {};
 
   if (range === 'month') {
     const sessionsByWeek: { [week: string]: number } = {};
@@ -211,17 +218,69 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
     const sortedMonths = Object.keys(sessionsByMonth).sort();
     chartLabels = sortedMonths;
     chartData = sortedMonths.map(month => sessionsByMonth[month]);
-  } else {
-    const sessionsByDay: { [date: string]: number } = {};
+  } else if (range === 'day') {
+    sessionsByDay = {};
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setHours(24, 0, 0, 0);
+
     filteredSessions.forEach(session => {
-      const date = new Date(session.startTime).toISOString().slice(0, 10);
-      sessionsByDay[date] = (sessionsByDay[date] || 0) + session.duration / 60;
+      let start = new Date(session.startTime);
+      let end = new Date(session.endTime);
+
+      const segmentStart = start < todayStart ? todayStart : start;
+      const segmentEnd = end > todayEnd ? todayEnd : end;
+
+      if (segmentStart < segmentEnd) {
+        let minutes = (segmentEnd.getTime() - segmentStart.getTime()) / 60000;
+        let dateLabel = todayStart.toLocaleDateString('en-CA');
+        sessionsByDay[dateLabel] = (sessionsByDay[dateLabel] || 0) + minutes / 60;
+      }
     });
+
+    chartLabels = [todayStart.toLocaleDateString('en-CA')];
+    chartData = [sessionsByDay[chartLabels[0]] || 0];
+  } else {
+    sessionsByDay = {};
+
+    filteredSessions.forEach(session => {
+      let start = new Date(session.startTime);
+      let end = new Date(session.endTime);
+
+      while (start < end) {
+        let nextDay = new Date(start);
+        nextDay.setHours(24, 0, 0, 0);
+
+        let segmentEnd = end < nextDay ? end : nextDay;
+
+        let minutes = (segmentEnd.getTime() - start.getTime()) / 60000;
+        let dateLabel = start.toLocaleDateString('en-CA');
+        sessionsByDay[dateLabel] = (sessionsByDay[dateLabel] || 0) + minutes / 60;
+
+        start = nextDay;
+      }
+    });
+
     const sortedDates = Object.keys(sessionsByDay).sort();
     chartLabels = sortedDates;
     chartData = sortedDates.map(date => sessionsByDay[date]);
   }
 
+  const totalHours =
+    range === 'month'
+      ? chartData.reduce((sum, hrs) => sum + hrs, 0)
+      : range === 'year'
+      ? chartData.reduce((sum, hrs) => sum + hrs, 0)
+      : Object.values(sessionsByDay).reduce((sum, hrs) => sum + hrs, 0);
+
+  const totalMinutes = totalHours * 60;
+
+  const displayedChartData =
+  chartUnit === 'hours'
+    ? chartData
+    : chartData.map(h => h * 60);
 
   return (
     <div>
@@ -239,9 +298,9 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
           </button>
         ))}
       </div>
-      
+
       <h3>Total Time: {formatTime(totalMinutes)}</h3>
-      
+
       <hr className="section-divider" />
       
       <div style={{ textAlign: 'center' }}>
@@ -278,14 +337,30 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
     {range !== 'day' && (
       <div style={{ maxWidth: 600, margin: '2em 0' }}>
-        <h3>Hours Played ({rangeLabels[range]})</h3>
+        <h3>Time Played ({rangeLabels[range]})</h3>
+        
+        <div style={{ textAlign: 'center', margin: '1em 0' }}>
+          <button
+            onClick={() => setChartUnit('hours')}
+            style={{ fontWeight: chartUnit === 'hours' ? 'bold' : 'normal' }}
+          >
+            Hours
+          </button>
+          <button
+            onClick={() => setChartUnit('minutes')}
+            style={{ fontWeight: chartUnit === 'minutes' ? 'bold' : 'normal' }}
+          >
+            Minutes
+          </button>
+        </div>
+        
         <Line
           data={{
             labels: chartLabels,
             datasets: [
               {
-                label: 'Hours Played',
-                data: chartData,
+                label: chartUnit === 'hours' ? 'Hours Played' : 'Minutes Played',
+                data: displayedChartData,
                 borderColor: 'blue',
                 backgroundColor: 'rgba(0,0,255,0.1)',
                 tension: 0.3,
