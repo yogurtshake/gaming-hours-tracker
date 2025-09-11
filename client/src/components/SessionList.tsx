@@ -61,6 +61,13 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
   } = usePagination(sortedSessions, 5);
 
   useEffect(() => {
+    const savedGameId = localStorage.getItem('newSessionGameId');
+    const savedStartTime = localStorage.getItem('newSessionStartTime');
+    if (savedGameId) setGameId(savedGameId);
+    if (savedStartTime) setStartTime(savedStartTime);
+  }, []);
+
+  useEffect(() => {
     axios
       .get(`/sessions/${userId}`)
       .then((res) => setSessions(res.data))
@@ -85,6 +92,8 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       setGameId("");
       setStartTime("");
       setEndTime("");
+      localStorage.removeItem('newSessionGameId');
+      localStorage.removeItem('newSessionStartTime');
       if (onSessionsChanged) onSessionsChanged();
     } catch (err) {
       console.error(err);
@@ -153,7 +162,10 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
       <form onSubmit={addSession}>
         <select
           value={gameId}
-          onChange={(e) => setGameId(e.target.value)}
+          onChange={(e) => {
+            setGameId(e.target.value);
+            localStorage.setItem('newSessionGameId', e.target.value);
+          }}
           required
         >
           <option value="">Select game</option>
@@ -168,10 +180,17 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
           <input
             type="datetime-local"
             value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            onChange={(e) => {
+              setStartTime(e.target.value);
+              localStorage.setItem('newSessionStartTime', e.target.value);
+            }}
             required
           />
-          <button type="button" onClick={() => setStartTime(getNowForInput())}>
+          <button type="button" onClick={() => {
+            const now = getNowForInput();
+            setStartTime(now);
+            localStorage.setItem('newSessionStartTime', now);
+          }}>
             Now
           </button>
         </div>
@@ -187,6 +206,11 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
             Now
           </button>
         </div>
+
+        <span style={{ fontSize: '0.8em', fontStyle: 'italic', color: '#666' }}>
+          *Game selection and start time will persist even if you leave the page*
+        </span>
+
         <button type="submit">Add Session</button>
       </form>
 
