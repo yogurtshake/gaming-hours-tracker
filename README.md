@@ -1,4 +1,4 @@
-# Gaming hours tracker
+# gaming-hours-tracker
 
 [webpage](https://lucas.su-keun.kim/gaming-hours-tracker)
 
