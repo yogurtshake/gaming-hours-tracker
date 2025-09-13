@@ -44,7 +44,7 @@ function App() {
 
   return (
     <div className="main-layout">
- 
+  
       {userId && (
         <aside className="games-sidebar">
           <GameList userId={userId} games={games} refreshGames={fetchGames} />
@@ -57,7 +57,8 @@ function App() {
             <nav>
               {userId ? (
                 <>
-                  <Link to="/">Sessions</Link> | <Link to="/settings">Settings</Link> |{" "}
+                  <Link to="/">Sessions</Link>
+                  <Link to="/settings">Settings</Link>
                   <button onClick={handleLogout}>Logout</button>
                 </>
               ) : (
