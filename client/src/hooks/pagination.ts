@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export function usePagination<T>(items: T[], defaultPerPage = 5) {
+export function usePagination<T>(items: T[], defaultPerPage = 10) {
   const [itemsPerPage, setItemsPerPage] = useState(defaultPerPage);
   const [currentPage, setCurrentPage] = useState(1);
 

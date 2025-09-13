@@ -288,7 +288,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
     currentPage,
     setCurrentPage,
     totalPages,
-  } = usePagination(perGameStatsArray, 5);
+  } = usePagination(perGameStatsArray);
 
   const pieData = {
     labels: perGameStatsArray.map(stat => stat.game?.title || 'Unknown Game'),

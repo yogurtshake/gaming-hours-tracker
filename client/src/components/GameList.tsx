@@ -32,7 +32,7 @@ const GameList: React.FC<GameListProps> = ({ userId, games, refreshGames }) => {
     currentPage,
     setCurrentPage,
     totalPages,
-  } = usePagination(displayedGames, 5);
+  } = usePagination(displayedGames);
 
   const addGame = async (e: React.FormEvent) => {
     e.preventDefault();

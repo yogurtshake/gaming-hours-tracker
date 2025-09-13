@@ -58,7 +58,7 @@ const SessionList: React.FC<SessionListProps> = ({ userId, games, onSessionsChan
     currentPage,
     setCurrentPage,
     totalPages,
-  } = usePagination(sortedSessions, 5);
+  } = usePagination(sortedSessions);
 
   useEffect(() => {
     const savedGameId = localStorage.getItem('newSessionGameId');
