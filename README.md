@@ -10,16 +10,8 @@ some stuff
 
 ### app functionality
 
-Node.js,
-
-React,
-
-MongoDB,
-
-*everything found in the node_modules folders*
+Node.js, React, MongoDB, *everything found in the node_modules folders*
 
 ### hosting functionality
 
-nginx (for reverse proxy),
-
-PM2 (for managing the app process)
+nginx (for reverse proxy), PM2 (for managing the app process)
