@@ -360,7 +360,7 @@ const Stats: React.FC<{ userId: string; range: Range; setRange: (r: Range) => vo
 
         <form onSubmit={handleGoalSave} style={{ margin: '1rem 0', display: 'inline-block' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            Set goal (hours per day):
+            Set goal (max hrs per day):
             <input
               id="goalInput"
               type="number"
