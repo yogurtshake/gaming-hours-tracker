@@ -1,10 +1,8 @@
 -STATS
-	-weekly report emailed to each user perhaps (with graphs??)
-		-re-write email contents with per-game stats, unsubscribe instructions, etc.
 	-add "prev/next" selection for all selectable time frames (day, week, month, year)
 
 -GAMES
-	-have owner be able to remove games?
+	-
 
 -SESSIONS
 	-
@@ -19,3 +17,7 @@
 
 -OTHER
 	-write PM2 instructions to setup_instructions.txt
+	-make the app icon look better (change background colour in manifest.json)
+
+-UPDATE
+	-need to rebuild app on server to update
