@@ -22,13 +22,18 @@ function formatDuration(minutes) {
 
 async function getWeeklyStatsForUser(userId) {
   const now = new Date();
-  const weekAgo = new Date(now);
-  weekAgo.setDate(now.getDate() - 7);
+
+  const lastMonday = new Date(now);
+  lastMonday.setDate(now.getDate() - ((now.getDay() + 6) % 7) - 7); 
+
+  const lastSunday = new Date(lastMonday);
+  lastSunday.setDate(lastMonday.getDate() + 6);
+  lastSunday.setHours(23, 59, 59, 999);
 
   const sessions = await Session.find({
     user: userId,
-    startTime: { $lte: now },
-    endTime: { $gte: weekAgo }
+    startTime: { $lte: lastSunday },
+    endTime: { $gte: lastMonday }
   }).populate('game');
 
   if (!sessions.length) {
@@ -40,8 +45,8 @@ async function getWeeklyStatsForUser(userId) {
   const perGameStats = {};
 
   sessions.forEach(s => {
-    const sStart = new Date(Math.max(new Date(s.startTime).getTime(), weekAgo.getTime()));
-    const sEnd = new Date(Math.min(new Date(s.endTime).getTime(), now.getTime()));
+    const sStart = new Date(Math.max(new Date(s.startTime).getTime(), lastMonday.getTime()));
+    const sEnd = new Date(Math.min(new Date(s.endTime).getTime(), lastSunday.getTime()));
 
     if (sStart >= sEnd) return;
 
@@ -60,15 +65,23 @@ async function getWeeklyStatsForUser(userId) {
 
       const game = s.game || { _id: 'unknown', title: 'Unknown Game' };
       const gameId = String(game._id);
+
       if (!perGameStats[gameId]) {
         perGameStats[gameId] = { game, totalMinutes: 0, sessions: 0 };
       }
       perGameStats[gameId].totalMinutes += minutes;
-      perGameStats[gameId].sessions += 1;
+
+      if (!perGameStats[gameId]._sessionIds) perGameStats[gameId]._sessionIds = new Set();
+      if (!perGameStats[gameId]._sessionIds.has(s._id.toString())) {
+        perGameStats[gameId].sessions += 1;
+        perGameStats[gameId]._sessionIds.add(s._id.toString());
+      }
 
       segStart = nextDay;
     }
   });
+
+  Object.values(perGameStats).forEach(g => delete g._sessionIds);
 
   const weeklyGoal = (await User.findById(userId)).goalPerDay * 7 * 60;
 
