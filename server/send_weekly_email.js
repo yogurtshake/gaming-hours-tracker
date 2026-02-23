@@ -91,9 +91,13 @@ async function getWeeklyStatsForUser(userId) {
   report += `WEEKLY LIMIT: ${formatDuration(weeklyGoal)}\n\n${weeklyGoal >= totalMinutes ? 'Good job staying within your limit!' : 'You exceeded your limit.'}\n\n`;
 
   report += `TIME PER DAY:\n`;
-  Object.keys(sessionsByDay).sort().forEach(day => {
-    report += `  ${day}: ${formatDuration(Math.round(sessionsByDay[day]))}\n`;
-  });
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(lastMonday);
+    day.setDate(lastMonday.getDate() + i);
+    const dayLabel = day.toLocaleDateString('en-CA');
+    const minutes = sessionsByDay[dayLabel] || 0;
+    report += `  ${dayLabel}: ${formatDuration(Math.round(minutes))}\n`;
+  }
 
   report += `\nTIME PER GAME:\n`;
   const gameStatsArr = Object.values(perGameStats).sort((a, b) => b.totalMinutes - a.totalMinutes);
